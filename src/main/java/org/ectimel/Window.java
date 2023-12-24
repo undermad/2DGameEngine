@@ -1,8 +1,11 @@
 package org.ectimel;
 
+import org.ectimel.utils.TimeConverter;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
+
+import java.sql.Time;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -15,6 +18,8 @@ public class Window {
     private String title;
     private static Window window;
     private long glfwWindow;
+    private RGBA rgba = new RGBA();
+    private Scene currentScene;
 
     private Window() {
         this.width = 1920;
@@ -22,9 +27,50 @@ public class Window {
         this.title = "Experimental Game Engine";
     }
 
-    public static Window getInstance() {
-        if (Window.window == null) window = new Window();
-        return window;
+    public void changeScene(int scene) {
+        switch (scene) {
+            case 0:
+                currentScene = new LevelEditorScene();
+                //currentScene.init()
+                break;
+            case 1:
+                currentScene = new LevelScene();
+//                currentScene.init();
+                break;
+            default:
+                assert false : "Unknown scene '" + scene + "'";
+        }
+
+    }
+
+
+    public void loop() {
+        float startTime = TimeConverter.getTime();
+        float endTime = TimeConverter.getTime();
+        float deltaTime = -1f;
+
+        while (!glfwWindowShouldClose(glfwWindow)) {
+
+            // poll events
+            glfwPollEvents();
+
+            glClearColor(rgba.getR(), rgba.getG(), rgba.getB(), rgba.getA());
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            if (deltaTime != 0) {
+                currentScene.update(deltaTime);
+            }
+
+
+            glfwSwapBuffers(glfwWindow);
+
+            endTime = TimeConverter.getTime();
+            deltaTime = endTime - startTime;
+            float framePerSecond = 1 / deltaTime;
+//            System.out.println(framePerSecond);
+            startTime = endTime;
+        }
+
     }
 
     public void run() {
@@ -63,6 +109,11 @@ public class Window {
             throw new IllegalStateException("Failed to create the window.");
         }
 
+        glfwSetCursorPosCallback(glfwWindow, MouseListener::mousePosCallback);
+        glfwSetMouseButtonCallback(glfwWindow, MouseListener::mouseButtonCallback);
+        glfwSetScrollCallback(glfwWindow, MouseListener::mouseScrollCallback);
+        glfwSetKeyCallback(glfwWindow, KeyListener::keyCallback);
+
         // OpenGL context current
         glfwMakeContextCurrent(glfwWindow);
 
@@ -74,20 +125,16 @@ public class Window {
 
         // critical part
         GL.createCapabilities();
+        changeScene(0);
 
     }
 
-    public void loop() {
-        while (!glfwWindowShouldClose(glfwWindow)) {
-            // poll events
-            glfwPollEvents();
-
-            glClearColor(0.4f, 0.5f, 0.4f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
-
-            glfwSwapBuffers(glfwWindow);
-        }
-
+    public static Window getInstance() {
+        if (Window.window == null) window = new Window();
+        return window;
     }
 
+    public RGBA getRgba() {
+        return rgba;
+    }
 }
