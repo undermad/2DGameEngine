@@ -5,8 +5,6 @@ import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 
-import java.sql.Time;
-
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -31,11 +29,11 @@ public class Window {
         switch (scene) {
             case 0:
                 currentScene = new LevelEditorScene();
-                //currentScene.init()
+                currentScene.init();
                 break;
             case 1:
                 currentScene = new LevelScene();
-//                currentScene.init();
+                currentScene.init();
                 break;
             default:
                 assert false : "Unknown scene '" + scene + "'";
@@ -45,8 +43,8 @@ public class Window {
 
 
     public void loop() {
-        float startTime = TimeConverter.getTime();
-        float endTime = TimeConverter.getTime();
+        float startTime = TimeConverter.getRunningTime();
+        float endTime = TimeConverter.getRunningTime();
         float deltaTime = -1f;
 
         while (!glfwWindowShouldClose(glfwWindow)) {
@@ -54,17 +52,15 @@ public class Window {
             // poll events
             glfwPollEvents();
 
-            glClearColor(rgba.getR(), rgba.getG(), rgba.getB(), rgba.getA());
-            glClear(GL_COLOR_BUFFER_BIT);
-
             if (deltaTime != 0) {
                 currentScene.update(deltaTime);
             }
 
-
             glfwSwapBuffers(glfwWindow);
 
-            endTime = TimeConverter.getTime();
+
+
+            endTime = TimeConverter.getRunningTime();
             deltaTime = endTime - startTime;
             float framePerSecond = 1 / deltaTime;
 //            System.out.println(framePerSecond);
