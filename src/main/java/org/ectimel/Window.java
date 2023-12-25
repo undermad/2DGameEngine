@@ -16,7 +16,6 @@ public class Window {
     private String title;
     private static Window window;
     private long glfwWindow;
-    private RGBA rgba = new RGBA();
     private Scene currentScene;
 
     private Window() {
@@ -51,6 +50,9 @@ public class Window {
 
             // poll events
             glfwPollEvents();
+
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
 
             if (deltaTime != 0) {
                 currentScene.update(deltaTime);
@@ -130,7 +132,4 @@ public class Window {
         return window;
     }
 
-    public RGBA getRgba() {
-        return rgba;
-    }
 }

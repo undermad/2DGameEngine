@@ -1,6 +1,8 @@
 package org.ectimel;
 
 import org.ectimel.render.Shader;
+import org.ectimel.utils.TimeConverter;
+import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
@@ -13,17 +15,15 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 public class LevelEditorScene extends Scene {
 
 
-
-
     private int vaoID, eboID, vboID;
     private Shader defaultShader;
 
     private float[] vertexArray = {
-            //position xyz             //color rgba
-            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // bottom right
-            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, // top left
-            0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
-            -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, // bottom left
+            //position xyz      //color rgba
+            100.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // bottom right
+            0.0f, 100.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, // top left
+            100.0f, 100.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
+            0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, // bottom left
     };
 
     // IMPORTANT: Must be in anti-clockwise order
@@ -37,7 +37,40 @@ public class LevelEditorScene extends Scene {
     }
 
     @Override
+    public void update(float deltaTime) {
+        this.camera.position.x -= deltaTime * 50.0f;
+        this.camera.position.y -= deltaTime * 50.0f;
+
+        defaultShader.use();
+        defaultShader.uploadMat4f("uProjection", camera.getProjectionMatrix());
+        defaultShader.uploadMat4f("uView", camera.getViewMatrix());
+        defaultShader.uploadFloat("uTime", 5);
+
+        // Bind the VAO that we're using
+        glBindVertexArray(vaoID);
+
+        // Enable the vertex attribute pointers
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+
+        glDrawElements(GL_TRIANGLES, elementArray.length, GL_UNSIGNED_INT, 0);
+
+
+
+
+        //Unbind everything
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+
+        glBindVertexArray(0);
+
+        defaultShader.detach();
+    }
+
+    @Override
     public void init() {
+        this.camera = new Camera(new Vector2f());
+
         defaultShader = new Shader(Path.of(".\\assets\\shaders\\default.glsl"));
         defaultShader.compileAndLink();
 
@@ -74,28 +107,5 @@ public class LevelEditorScene extends Scene {
         glEnableVertexAttribArray(1);
 
 
-
-    }
-
-    @Override
-    public void update(float deltaTime) {
-        defaultShader.use();
-
-        // Bind the VAO that we're using
-        glBindVertexArray(vaoID);
-
-        // Enable the vertex attribute pointers
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-
-        glDrawElements(GL_TRIANGLES, elementArray.length, GL_UNSIGNED_INT, 0);
-
-        //Unbind everything
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
-
-        glBindVertexArray(0);
-
-        defaultShader.detach();
     }
 }
